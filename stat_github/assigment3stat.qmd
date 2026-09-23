@@ -1,0 +1,86 @@
+---
+title: "Demographics Across Countries"
+format: 
+  html
+output-file: "index-html"
+editor: visual
+---
+
+# Assignment 3 by Zoe Eldridge
+
+```{r}
+#| echo: false
+#| warning: false
+library(dplyr)
+library(tidyr)
+library(reactable)
+```
+
+Problem 1:
+
+```{r}
+df <- read.csv("https://manctsui.github.io/datasets/timesData.csv") 
+df |> 
+  head(3)
+```
+
+Problem 2:
+
+```{r}
+  row_cond <- grepl("University of California, Los Angeles", df$university_name)
+  df[row_cond,c("world_rank","university_name", "year")]
+  
+```
+
+Problem 3 and 4:
+
+```{r}
+#| layout-ncol: 2
+df2 <-  df[row_cond,c("world_rank","university_name", "year")]
+num_world_rank <- as.numeric(df2$world_rank)
+
+# Create a line graph with labels
+plot(df2$year, num_world_rank,
+main = "Year vs.World Rank for UCLA", 
+xlab = "Year",
+ylab = "World Rank",
+type="l" )
+
+#Problem 4
+ row_cond2 <- grepl("University of California, Berkeley", df$university_name)
+  df3 <- df[row_cond2,c("world_rank","university_name", "year")]
+
+  
+num3_world_rank <- as.numeric(df3$world_rank)
+
+# Create a line graph with labels
+plot(df3$year, num3_world_rank,
+main = "Year vs.World Rank for UC Berkley", 
+xlab = "Year",
+ylab = "World Rank",
+type="l" )
+      
+       
+```
+
+Problem 5:
+
+```{r}
+
+top_50 <- df |>
+  filter(grepl("United States of America", country))|>
+  mutate(world_rank = as.numeric(world_rank)) |>
+  filter(world_rank <= 50) |> 
+  distinct(year, university_name) |>
+  count(year) |> 
+  arrange(year)
+  
+
+
+plot(top_50$year, top_50$n,
+main = "Year vs.World Rank for the USA", 
+xlab = "Year", 
+ylab = "World Rank", 
+type="l" )
+```
+The trend I see is that the number of US univiersity in the top 50 have been declining over the years.
