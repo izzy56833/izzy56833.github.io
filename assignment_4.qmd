@@ -4,23 +4,117 @@ format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this
-
 ```{r}
 #| echo: false
-2 * 2
+#| warning: false
+library(dplyr)
+library(tidyr)
+library(reactable)
+library(ggplot2)
+library(plotly)
+library(crosstalk)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+df <- read.csv("https://manctsui.github.io/datasets/timesData.csv") 
+df |> 
+  head(3)
+```
+
+Problem 1A:
+
+```{r}
+top_3 <- df |>
+    count(country) |>
+    arrange(desc(n)) |>
+  mutate("Number of Colleges" = n) |> 
+  select(country,'Number of Colleges') |>
+  head(3)
+  
+reactable(top_3)
+```
+
+Problem 1B:
+
+```{r}
+plot2 <- plot_ly(top_3, x = ~ country, y= ~`Number of Colleges`, type = "bar") |>
+    layout(
+        title = "Country vs. How many colleges the country has",
+        xaxis = list(title = "The Countries"),
+        yaxis = list(title = "Colleges")
+    )
+
+plot2
+```
+
+Problem 2A:
+
+```{r}
+df |>
+  filter(year == 2011) |>
+  select(world_rank, university_name) |>
+  head(50) |>
+  reactable()
+
+top_50 <- df |>
+  filter(year == 2011) |>
+  select(world_rank, university_name) |>
+  head(50)
+
+
+
+ 
+
+ 
+```
+
+Problem 2B:
+
+No, using rank as a key would not be a good idea. This is because colleges can have the same rank for different years. This means that rank is not unique to any college.
+
+Problem 2C:
+
+```{r}
+top_50$world_rank <- as.numeric(top_50$world_rank)
+
+sd <- SharedData$new(top_50, key = ~university_name)  
+filter_slider("world_rank_slider","world_rank", sd, ~world_rank, 1, 50) 
+
+reactable(sd, defaultPageSize = 5)
+  
+
+```
+
+Problem 3:
+
+```{r}
+dfnew <- df |>
+  filter(year == 2016)
+
+ds <- SharedData$new(dfnew, key = ~university_name)
+
+#Scatter plot 1
+plot1 <- plot_ly(ds, x = ~num_students, y= ~student_staff_ratio, type = "scatter", mode = 'markers') |>
+    layout(
+        title = "Students Vs. Student-Staff ratio",
+        xaxis = list(title = "Number of Students"),
+        yaxis = list(title = "Student-Staff ratio")
+    )
+
+plot1
+
+plot2 <- plot_ly(ds, x = ~student_staff_ratio, y= ~total_score, type = "scatter", mode = 'markers') |>
+    layout(
+        title = "Student-Staff ratio vs. Teaching Score",
+        xaxis = list(title = "Student-Staff ratio"),
+        yaxis = list(title = "Teaching score")
+    )
+
+plot2
+
+bscols(
+  plot1,
+  plot2
+)
+
+```
